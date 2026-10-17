@@ -1,0 +1,13 @@
+{
+  "name": "andres_rhenals_aa2_ev01",
+  "version": "1.0.0",
+  "description": "Modulo de inventario de paneles solares para el proyecto MiSolAR",
+  "main": "src/app.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/app.js"
+  },
+  "keywords": [],
+  "author": "Andrés Felipe Rhenals Herrera",
+  "license": "ISC"
+}
