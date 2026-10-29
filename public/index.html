@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MiSolAR - Gestión de Inventario</title>
+
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f6f9; }
+        h1, h2 { color: #2c3e50; }
+        .container { max-width: 900px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        form { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 30px; }
+        .form-group { display: flex; flex-direction: column; }
+        label { font-weight: bold; margin-bottom: 5px; }
+        input, select, button { padding: 10px; border: 1px solid #ccc; border-radius: 4px; }
+        button { grid-column: span 2; background-color: #27ae60; color: white; border: none; font-weight: bold; cursor: pointer; }
+        button:hover { background-color: #219150; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background-color: #34495e; color: white; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>☀️ MiSolAR - Control de Paneles Solares</h1>
+        
+        <!-- Formulario HTTP POST -->
+        <h2>Registrar Nuevo Panel Solar</h2>
+        <form id="formPanel">
+            <div class="form-group">
+                <label for="codigo_serie">Código de Serie:</label>
+                <input type="text" id="codigo_serie" required>
+            </div>
+            <div class="form-group">
+                <label for="marca">Marca:</label>
+                <input type="text" id="marca" required>
+            </div>
+            <div class="form-group">
+                <label for="modelo">Modelo:</label>
+                <input type="text" id="modelo" required>
+            </div>
+            <div class="form-group">
+                <label for="potencia_watts">Potencia (Watts):</label>
+                <input type="number" id="potencia_watts" required>
+            </div>
+            <div class="form-group">
+                <label for="eficiencia_porcentaje">Eficiencia (%):</label>
+                <input type="number" step="0.01" id="eficiencia_porcentaje" required>
+            </div>
+            <div class="form-group">
+                <label for="precio_unitario">Precio Unitario ($):</label>
+                <input type="number" step="0.01" id="precio_unitario" required>
+            </div>
+            <div class="form-group">
+                <label for="stock">Cantidad en Stock:</label>
+                <input type="number" id="stock" value="1" required>
+            </div>
+            <div class="form-group">
+                <label for="estado">Estado:</label>
+                <select id="estado">
+                    <option value="Disponible">Disponible</option>
+                    <option value="Instalado">Instalado</option>
+                    <option value="Mantenimiento">Mantenimiento</option>
+                </select>
+            </div>
+            <button type="submit">Guardar Panel en Inventario</button>
+        </form>
+
+        <!-- Vista HTTP GET -->
+        <h2>Inventario Registrado (Consulta GET)</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Serie</th>
+                    <th>Marca/Modelo</th>
+                    <th>Potencia</th>
+                    <th>Precio</th>
+                    <th>Stock</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody id="tablaPaneles">
+                <!-- Se llena dinámicamente con JavaScript -->
+            </tbody>
+        </table>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
