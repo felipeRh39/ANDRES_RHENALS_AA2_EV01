@@ -9,5 +9,9 @@
   },
   "keywords": [],
   "author": "Andrés Felipe Rhenals Herrera",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "express": "^5.3.0",
+    "mysql2": "^3.24.6"
+  }
 }
