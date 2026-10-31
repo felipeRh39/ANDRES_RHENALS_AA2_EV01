@@ -1,66 +1,76 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const formPanel = document.getElementById('formPanel');
-    const tablaPaneles = document.getElementById('tablaPaneles');
+    const formLogin = document.getElementById('formLogin');
+    const formRegistro = document.getElementById('formRegistro');
+    const mensajeRespuesta = document.getElementById('mensajeRespuesta');
 
-    // 1. Petición GET: Cargar inventario al abrir la página
-    async function cargarInventario() {
-        try {
-            const respuesta = await fetch('/api/paneles');
-            const paneles = await respuesta.json();
-
-            tablaPaneles.innerHTML = '';
-            paneles.forEach(panel => {
-                const fila = document.createElement('tr');
-                fila.innerHTML = `
-                    <td>${panel.codigo_serie}</td>
-                    <td>${panel.marca} ${panel.modelo}</td>
-                    <td>${panel.potencia_watts} W</td>
-                    <td>$${panel.precio_unitario}</td>
-                    <td>${panel.stock}</td>
-                    <td>${panel.estado}</td>
-                `;
-                tablaPaneles.appendChild(fila);
-            });
-        } catch (error) {
-            console.error('Error al cargar el inventario:', error);
-        }
+    function mostrarMensaje(texto, esExito) {
+        mensajeRespuesta.textContent = texto;
+        mensajeRespuesta.className = `mensaje ${esExito ? 'exito' : 'error'}`;
+        mensajeRespuesta.style.display = 'block';
     }
 
-    // 2. Petición POST: Registrar panel desde el formulario
-    formPanel.addEventListener('submit', async (e) => {
-        e.preventDefault();
+    // Petición POST: Inicio de Sesión
+    if (formLogin) {
+        formLogin.addEventListener('submit', async (e) => {
+            e.preventDefault();
 
-        const datosPanel = {
-            codigo_serie: document.getElementById('codigo_serie').value,
-            marca: document.getElementById('marca').value,
-            modelo: document.getElementById('modelo').value,
-            potencia_watts: parseInt(document.getElementById('potencia_watts').value),
-            eficiencia_porcentaje: parseFloat(document.getElementById('eficiencia_porcentaje').value),
-            precio_unitario: parseFloat(document.getElementById('precio_unitario').value),
-            stock: parseInt(document.getElementById('stock').value),
-            estado: document.getElementById('estado').value
-        };
+            const datos = {
+                correo: document.getElementById('loginCorreo').value,
+                password: document.getElementById('loginPassword').value
+            };
 
-        try {
-            const respuesta = await fetch('/api/paneles', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(datosPanel)
-            });
+            try {
+                const respuesta = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(datos)
+                });
 
-            if (respuesta.ok) {
-                alert('¡Panel solar guardado exitosamente en la base de datos!');
-                formPanel.reset();
-                cargarInventario(); // Recargar la tabla dinámicamente
-            } else {
-                const error = await respuesta.json();
-                alert(`Error: ${error.mensaje}`);
+                const resultado = await respuesta.json();
+
+                if (respuesta.ok) {
+                    mostrarMensaje(`¡${resultado.mensaje}! Bienvenido(a) ${resultado.usuario.nombre}`, true);
+                    formLogin.reset();
+                } else {
+                    mostrarMensaje(resultado.mensaje, false);
+                }
+            } catch (error) {
+                mostrarMensaje('Error al conectar con el servidor', false);
             }
-        } catch (error) {
-            console.error('Error al enviar el formulario:', error);
-        }
-    });
+        });
+    }
 
-    // Carga inicial
-    cargarInventario();
+    // Petición POST: Registro de Usuario
+    if (formRegistro) {
+        formRegistro.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const datos = {
+                nombre: document.getElementById('regNombre').value,
+                correo: document.getElementById('regCorreo').value,
+                password: document.getElementById('regPassword').value,
+                rol: document.getElementById('regRol').value
+            };
+
+            try {
+                const respuesta = await fetch('/api/auth/registro', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(datos)
+                });
+
+                const resultado = await respuesta.json();
+
+                if (respuesta.ok) {
+                    mostrarMensaje(`${resultado.mensaje}. Ahora puedes iniciar sesión.`, true);
+                    formRegistro.reset();
+                    setTimeout(() => mostrarLogin(), 2000);
+                } else {
+                    mostrarMensaje(resultado.mensaje, false);
+                }
+            } catch (error) {
+                mostrarMensaje('Error al procesar el registro', false);
+            }
+        });
+    }
 });

@@ -3,6 +3,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import panelRoutes from './routes/panelRoutes.js';
 import calculoRoutes from './routes/calculoRoutes.js'; //nuevo modulo de dimencionamiento
+import authRoutes from './routes/authRoutes.js'; // <-- Importar rutas de autenticación
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -25,6 +26,7 @@ app.use('/api', panelRoutes);
 // Rutas de la API de MiSolAR
 app.use('/api', panelRoutes);
 app.use('/api', calculoRoutes); // Nuevo módulo de dimensionamiento
+app.use('/api', authRoutes); // <-- Registrar rutas de autenticación
 
 // Inicio del servidor
 app.listen(PORT, () => {
