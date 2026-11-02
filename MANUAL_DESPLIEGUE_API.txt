@@ -1,0 +1,33 @@
+=====================================================
+SENA - ANALISIS Y DESARROLLO DE SOFTWARE (ADSO)
+Evidencia: GA7-220501096-AA5-EV02 - Despliegue de módulos del software (servicios web)
+Aprendiz: Andrés Felipe Rhenals Herrera
+Ficha: 3186620
+Proyecto: MiSolAR - API REST Services
+=====================================================
+
+1. ENTORNO DE EJECUCIÓN Y DESPLIEGUE:
+- Servidor: Node.js (v24.x) / Express Framework
+- Base de Datos: MySQL
+- Puerto de Servicio: http://localhost:3000
+- Variables de Entorno: Gestionadas mediante dotenv (.env)
+
+2. ENDPOINTS DESPLEGADOS Y DISPONIBLES (API REST):
+
+[Módulo 1: Inventario de Paneles Solares]
+- GET  /api/paneles -> Obtener listado de paneles solares.
+- POST /api/paneles -> Registrar un nuevo panel solar.
+
+[Módulo 2: Dimensionamiento Energético]
+- GET  /api/calculo -> Consultar historial de cálculos solares.
+- POST /api/calculo -> Procesar y guardar cálculo energético.
+
+[Módulo 3: Autenticación y Seguridad]
+- POST /api/auth/registro -> Registro de nuevos usuarios.
+- POST /api/auth/login    -> Autenticación e inicio de sesión.
+
+3. INSTRUCCIONES DE DESPLIEGUE LOCAL:
+1. Clonar el repositorio: git clone <URL_GITHUB>
+2. Instalar dependencias: npm install
+3. Configurar variables de entorno copiando .env.example a .env
+4. Iniciar el servicio web: npm start

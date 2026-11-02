@@ -1,76 +1,91 @@
 document.addEventListener('DOMContentLoaded', () => {
     const formLogin = document.getElementById('formLogin');
     const formRegistro = document.getElementById('formRegistro');
-    const mensajeRespuesta = document.getElementById('mensajeRespuesta');
 
-    function mostrarMensaje(texto, esExito) {
-        mensajeRespuesta.textContent = texto;
-        mensajeRespuesta.className = `mensaje ${esExito ? 'exito' : 'error'}`;
-        mensajeRespuesta.style.display = 'block';
-    }
-
-    // Petición POST: Inicio de Sesión
+    // 1. EVENTO INICIO DE SESIÓN (LOGIN)
     if (formLogin) {
         formLogin.addEventListener('submit', async (e) => {
             e.preventDefault();
-
-            const datos = {
-                correo: document.getElementById('loginCorreo').value,
-                password: document.getElementById('loginPassword').value
-            };
+            const correo = document.getElementById('loginCorreo').value;
+            const password = document.getElementById('loginPassword').value;
 
             try {
-                const respuesta = await fetch('/api/auth/login', {
+                const res = await fetch('/api/auth/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(datos)
+                    body: JSON.stringify({ correo, password })
                 });
 
-                const resultado = await respuesta.json();
-
-                if (respuesta.ok) {
-                    mostrarMensaje(`¡${resultado.mensaje}! Bienvenido(a) ${resultado.usuario.nombre}`, true);
-                    formLogin.reset();
+                const data = await res.json();
+                if (res.ok) {
+                    localStorage.setItem('usuarioMiSolar', JSON.stringify(data.usuario));
+                    mostrarAlerta('¡Autenticación satisfactoria! Redirigiendo...', true);
+                    setTimeout(() => {
+                        window.location.href = 'dashboard.html';
+                    }, 1500);
                 } else {
-                    mostrarMensaje(resultado.mensaje, false);
+                    mostrarAlerta(data.mensaje, false);
                 }
-            } catch (error) {
-                mostrarMensaje('Error al conectar con el servidor', false);
+            } catch (err) {
+                mostrarAlerta('Error de conexión con el servidor', false);
             }
         });
     }
 
-    // Petición POST: Registro de Usuario
+    // 2. EVENTO REGISTRO DE USUARIO
     if (formRegistro) {
         formRegistro.addEventListener('submit', async (e) => {
             e.preventDefault();
-
-            const datos = {
-                nombre: document.getElementById('regNombre').value,
-                correo: document.getElementById('regCorreo').value,
-                password: document.getElementById('regPassword').value,
-                rol: document.getElementById('regRol').value
-            };
+            const nombre = document.getElementById('regNombre').value;
+            const correo = document.getElementById('regCorreo').value;
+            const password = document.getElementById('regPassword').value;
+            const rolElem = document.getElementById('regRol');
+            const rol = rolElem ? rolElem.value : 'Tecnico';
 
             try {
-                const respuesta = await fetch('/api/auth/registro', {
+                const res = await fetch('/api/auth/registro', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(datos)
+                    body: JSON.stringify({ nombre, correo, password, rol })
                 });
 
-                const resultado = await respuesta.json();
-
-                if (respuesta.ok) {
-                    mostrarMensaje(`${resultado.mensaje}. Ahora puedes iniciar sesión.`, true);
+                const data = await res.json();
+                if (res.ok) {
+                    mostrarAlerta('¡Registro exitoso! Redirigiendo al inicio de sesión...', true);
                     formRegistro.reset();
-                    setTimeout(() => mostrarLogin(), 2000);
+                    setTimeout(() => {
+                        toggleViews();
+                    }, 1800);
                 } else {
-                    mostrarMensaje(resultado.mensaje, false);
+                    mostrarAlerta(data.mensaje, false);
                 }
-            } catch (error) {
-                mostrarMensaje('Error al procesar el registro', false);
+            } catch (err) {
+                mostrarAlerta('Error en el proceso de registro', false);
             }
         });
     }
 });
+
+function toggleViews() {
+    const boxLogin = document.getElementById('boxLogin');
+    const boxRegistro = document.getElementById('boxRegistro');
+    const alertBox = document.getElementById('alertBox');
+    
+    if (alertBox) alertBox.style.display = 'none';
+
+    if (boxLogin.style.display === 'none') {
+        boxLogin.style.display = 'block';
+        boxRegistro.style.display = 'none';
+    } else {
+        boxLogin.style.display = 'none';
+        boxRegistro.style.display = 'block';
+    }
+}
+
+function mostrarAlerta(msg, esExito) {
+    const alertBox = document.getElementById('alertBox');
+    if (!alertBox) return;
+    alertBox.textContent = msg;
+    alertBox.className = `alert ${esExito ? 'alert-success' : 'alert-error'}`;
+    alertBox.style.display = 'block';
+}

@@ -25,13 +25,14 @@ export const registrar = async (req, res) => {
             usuarioId: idInsertado
         });
     } catch (error) {
+        console.error('Error detallado en registro:', error);
         res.status(500).json({ mensaje: 'Error al registrar el usuario', error: error.message });
     }
 };
 
 /**
  * @function login
- * @description Autenticación de usuarios según los requerimientos del caso.
+ * @description Autenticación e inicio de sesión de usuarios.
  * @route POST /api/auth/login
  */
 export const login = async (req, res) => {
@@ -49,7 +50,7 @@ export const login = async (req, res) => {
             return res.status(401).json({ mensaje: 'Error en la autenticación: Credenciales inválidas.' });
         }
 
-        // Respuesta de autenticación satisfactoria exigida por la guía
+        // Respuesta satisfactoria
         res.status(200).json({
             mensaje: 'Autenticación satisfactoria',
             usuario: {
@@ -60,6 +61,7 @@ export const login = async (req, res) => {
             }
         });
     } catch (error) {
+        console.error('Error detallado en login:', error);
         res.status(500).json({ mensaje: 'Error en el proceso de autenticación', error: error.message });
     }
 };
