@@ -2,9 +2,11 @@
 SENA - ANALISIS Y DESARROLLO DE SOFTWARE (ADSO)
 Ficha: 3186620
 Fase del proyecto: Ejecucion
-Evidencia: GA7-220501096-AA5-EV01. Diseño y desarrollo de servicios web - caso.
+Evidencia: GA8-220501096-AA1-EV01. Desarrollar software a partir de la integración de sus módulos
+componentes.
 Aprendiz: Andrés Felipe Rhenals Herrera
 Proyecto Formativo: MiSolAR
+
 =====================================================
 
 Enlace al repositorio público en GitHub:
