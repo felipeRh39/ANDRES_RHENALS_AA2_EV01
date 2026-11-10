@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MiSolAr - Dimensionamiento Solar</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #eef2f5; margin: 0; padding: 20px; display: flex; justify-content: center; }
+        .container { background: white; padding: 25px; border-radius: 10px; width: 100%; max-width: 500px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #ecf0f1; padding-bottom: 10px; margin-bottom: 20px; }
+        h2 { margin: 0; color: #2c3e50; }
+        .btn-logout { background: #e74c3c; color: white; border: none; padding: 6px 12px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        label { font-weight: bold; font-size: 14px; display: block; margin-top: 12px; }
+        input, select { width: 100%; padding: 9px; margin-top: 5px; box-sizing: border-box; border: 1px solid #bdc3c7; border-radius: 5px; }
+        .checkbox-group { display: flex; align-items: center; gap: 10px; margin-top: 15px; }
+        .checkbox-group input { width: auto; margin: 0; }
+        .btn-calcular { width: 100%; background: #f39c12; color: white; border: none; padding: 12px; border-radius: 5px; font-size: 16px; font-weight: bold; margin-top: 20px; cursor: pointer; }
+        .resultado { margin-top: 20px; background: #e8f8f5; padding: 15px; border-left: 5px solid #2ecc71; border-radius: 5px; display: none; }
+        .resultado h3 { margin-top: 0; color: #16a085; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h2>MiSolAr MVP</h2>
+        <button class="btn-logout" onclick="cerrarSesion()">Cerrar Sesión</button>
+    </div>
+
+    <p>Bienvenido, <strong id="nombreUsuario">Usuario</strong></p>
+
+    <form id="solarForm" onsubmit="realizarCalculo(event)">
+        <label>Consumo Promedio Mensual (kWh/mes):</label>
+        <input type="number" id="consumoMensual" placeholder="Ej: 250" required min="1">
+
+        <label>Porcentaje de Ahorro Deseado (%):</label>
+        <input type="number" id="porcentajeAhorro" placeholder="Ej: 80" required min="1" max="100" value="100">
+
+        <div class="checkbox-group">
+            <input type="checkbox" id="redEstable" checked>
+            <label for="redEstable" style="margin: 0;">¿La red eléctrica local es estable (sin cortes)?</label>
+        </div>
+
+        <button type="submit" class="btn-calcular">Calcular Planta Solar</button>
+    </form>
+
+    <div class="resultado" id="panelResultado">
+        <h3>Resumen del Dimensionamiento</h3>
+        <p><strong>Tipo de Sistema:</strong> <span id="resTipoConexion"></span></p>
+        <p><strong>Paneles Solares (500W):</strong> <span id="resPaneles"></span> unidades</p>
+        <p><strong>Inversor Recomendado:</strong> <span id="resInversor"></span></p>
+        <p><strong>Banco de Baterías:</strong> <span id="resBaterias"></span></p>
+    </div>
+</div>
+
+<script>
+    // Verificar si hay sesión activa
+    const usuario = JSON.parse(localStorage.getItem('usuarioMiSolar'));
+    if (!usuario) {
+        window.location.href = '/index.html';
+    } else {
+        document.getElementById('nombreUsuario').innerText = usuario.nombre;
+    }
+
+    function cerrarSesion() {
+        localStorage.removeItem('usuarioMiSolar');
+        window.location.href = '/index.html';
+    }
+
+    async function realizarCalculo(e) {
+        e.preventDefault();
+        const consumoMensual = document.getElementById('consumoMensual').value;
+        const porcentajeAhorro = document.getElementById('porcentajeAhorro').value;
+        const redEstable = document.getElementById('redEstable').checked;
+
+        const res = await fetch('/api/calcular', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ consumoMensual, porcentajeAhorro, redEstable })
+        });
+
+        const data = await res.json();
+        if (data.exito) {
+            const r = data.resumen;
+            document.getElementById('resTipoConexion').innerText = r.tipoConexion;
+            document.getElementById('resPaneles').innerText = r.paneles.cantidad + ' paneles de 500W';
+            document.getElementById('resInversor').innerText = r.inversor.potenciaRecomendada + ' (' + r.inversor.tipo + ')';
+            
+            if (r.baterias.requiere) {
+                document.getElementById('resBaterias').innerText = r.baterias.cantidad + ' baterías de ' + r.baterias.especificacion;
+            } else {
+                document.getElementById('resBaterias').innerText = 'No requiere (Sistema On-Grid)';
+            }
+
+            document.getElementById('panelResultado').style.display = 'block';
+        }
+    }
+</script>
+
+</body>
+</html>

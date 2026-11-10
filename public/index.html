@@ -3,75 +3,89 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MiSolAR - Acceso al Sistema</title>
+    <title>MiSolAr - Autenticación</title>
     <style>
-        body { font-family: Arial, sans-serif; background-color: #f4f6f9; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .card { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); width: 350px; }
-        h1, h2 { color: #2c3e50; text-align: center; margin-bottom: 20px; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; font-weight: bold; margin-bottom: 5px; }
-        input, select, button { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-        button { background-color: #27ae60; color: white; border: none; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        body { font-family: Arial, sans-serif; background-color: #f4f7f6; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .card { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); width: 320px; }
+        h2 { text-align: center; color: #2c3e50; margin-top: 0; }
+        label { font-weight: bold; font-size: 14px; display: block; margin-top: 10px; }
+        input { width: 100%; padding: 8px; margin-top: 5px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 5px; }
+        button { width: 100%; background-color: #27ae60; color: white; border: none; padding: 10px; margin-top: 15px; border-radius: 5px; cursor: pointer; font-size: 16px; font-weight: bold; }
         button:hover { background-color: #219150; }
-        .btn-link { background: none; color: #2980b9; border: none; text-decoration: underline; margin-top: 15px; cursor: pointer; text-align: center; display: block; width: 100%; }
-        .alert { margin-top: 15px; padding: 10px; border-radius: 4px; text-align: center; display: none; }
-        .alert-error { background-color: #f8d7da; color: #721c24; }
-        .alert-success { background-color: #d4edda; color: #155724; }
+        .toggle-btn { background-color: transparent; color: #2980b9; border: none; margin-top: 10px; text-decoration: underline; font-size: 13px; }
+        .mensaje { font-size: 13px; text-align: center; margin-top: 10px; color: #c0392b; }
     </style>
 </head>
 <body>
-    <div class="card">
-        <h1>☀️ MiSolAR</h1>
 
-        <!-- SECCIÓN LOGIN -->
-        <div id="boxLogin">
-            <h2>Iniciar Sesión</h2>
-            <form id="formLogin">
-                <div class="form-group">
-                    <label for="loginCorreo">Correo Electrónico:</label>
-                    <input type="email" id="loginCorreo" required>
-                </div>
-                <div class="form-group">
-                    <label for="loginPassword">Contraseña:</label>
-                    <input type="password" id="loginPassword" required>
-                </div>
-                <button type="submit">Ingresar al Sistema</button>
-            </form>
-            <button type="button" class="btn-link" onclick="toggleViews()">¿No tienes cuenta? Regístrate</button>
-        </div>
-
-        <!-- SECCIÓN REGISTRO -->
-        <div id="boxRegistro" style="display: none;">
-            <h2>Crear Cuenta</h2>
-            <form id="formRegistro">
-                <div class="form-group">
-                    <label for="regNombre">Nombre Completo:</label>
-                    <input type="text" id="regNombre" required>
-                </div>
-                <div class="form-group">
-                    <label for="regCorreo">Correo Electrónico:</label>
-                    <input type="email" id="regCorreo" required>
-                </div>
-                <div class="form-group">
-                    <label for="regPassword">Contraseña:</label>
-                    <input type="password" id="regPassword" required>
-                </div>
-                <div class="form-group">
-                    <label for="regRol">Rol de Usuario:</label>
-                    <select id="regRol">
-                        <option value="Tecnico">Técnico</option>
-                        <option value="Administrador">Administrador</option>
-                        <option value="Cliente">Cliente</option>
-                    </select>
-                </div>
-                <button type="submit">Registrarme</button>
-            </form>
-            <button type="button" class="btn-link" onclick="toggleViews()">¿Ya tienes cuenta? Inicia Sesión</button>
-        </div>
-
-        <div id="alertBox" class="alert"></div>
+<div class="card">
+    <h2 id="titulo">Iniciar Sesión</h2>
+    
+    <div id="campoNombre" style="display: none;">
+        <label>Nombre Completo:</label>
+        <input type="text" id="nombre" placeholder="Andrés Rhenals">
     </div>
 
-    <script src="app.js"></script>
+    <label>Correo Electrónico:</label>
+    <input type="email" id="email" placeholder="usuario@correo.com">
+
+    <label>Contraseña:</label>
+    <input type="password" id="password" placeholder="••••••••">
+
+    <button id="btnPrincipal" onclick="procesarFormulario()">Ingresar</button>
+    
+    <div class="mensaje" id="mensaje"></div>
+
+    <button class="toggle-btn" id="btnToggle" onclick="cambiarModo()">¿No tienes cuenta? Regístrate aquí</button>
+</div>
+
+<script>
+    let esModoRegistro = false;
+
+    function cambiarModo() {
+        esModoRegistro = !esModoRegistro;
+        document.getElementById('titulo').innerText = esModoRegistro ? 'Crear Cuenta' : 'Iniciar Sesión';
+        document.getElementById('campoNombre').style.display = esModoRegistro ? 'block' : 'none';
+        document.getElementById('btnPrincipal').innerText = esModoRegistro ? 'Registrarse' : 'Ingresar';
+        document.getElementById('btnToggle').innerText = esModoRegistro ? '¿Ya tienes cuenta? Inicia sesión' : '¿No tienes cuenta? Regístrate aquí';
+        document.getElementById('mensaje').innerText = '';
+    }
+
+    async function procesarFormulario() {
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const mensajeDiv = document.getElementById('mensaje');
+
+        if (esModoRegistro) {
+            const nombre = document.getElementById('nombre').value;
+            const res = await fetch('/api/auth/registro', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nombre, email, password })
+            });
+            const data = await res.json();
+            if (data.exito) {
+                alert('¡Registro exitoso en MySQL! Ahora puedes iniciar sesión.');
+                cambiarModo();
+            } else {
+                mensajeDiv.innerText = data.error;
+            }
+        } else {
+            const res = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+            const data = await res.json();
+            if (data.exito) {
+                localStorage.setItem('usuarioMiSolar', JSON.stringify(data.usuario));
+                window.location.href = '/calculo.html';
+            } else {
+                mensajeDiv.innerText = data.error;
+            }
+        }
+    }
+</script>
+
 </body>
 </html>

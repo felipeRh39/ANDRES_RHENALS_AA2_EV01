@@ -1,34 +1,22 @@
 import express from 'express';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import panelRoutes from './routes/panelRoutes.js';
-import calculoRoutes from './routes/calculoRoutes.js'; //nuevo modulo de dimencionamiento
-import authRoutes from './routes/authRoutes.js'; // <-- Importar rutas de autenticación
+import dotenv from 'dotenv';
+import { registrar, login } from './controllers/authController.js';
+import { calcularDimensionamiento } from './controllers/calculoController.js';
+
+dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 3000;
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-
-
-// Middlewares
 app.use(express.json());
-app.use(express.urlencoded({ extended: true })); // Para procesar formularios HTML
+app.use(express.static('public'));
 
-// Servir la interfaz de usuario estática desde la carpeta "public"
-app.use(express.static(path.join(__dirname, '../public')));
+// Rutas de Autenticación
+app.post('/api/auth/registro', registrar);
+app.post('/api/auth/login', login);
 
-// Rutas de la API
-app.use('/api', panelRoutes);
+// Ruta de Cálculo Solar
+app.post('/api/calcular', calcularDimensionamiento);
 
-// Rutas de la API de MiSolAR
-app.use('/api', panelRoutes);
-app.use('/api', calculoRoutes); // Nuevo módulo de dimensionamiento
-app.use('/api', authRoutes); // <-- Registrar rutas de autenticación
-
-// Inicio del servidor
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Servidor de MiSolAR corriendo en http://localhost:${PORT}`);
 });

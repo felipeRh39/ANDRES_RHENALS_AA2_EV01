@@ -1,67 +1,46 @@
-import { UsuarioModel } from '../models/usuarioModel.js';
+import { User } from '../models/userModel.js';
 
-/**
- * @function registrar
- * @description Registro de nuevos usuarios en el sistema MiSolAR.
- * @route POST /api/auth/registro
- */
 export const registrar = async (req, res) => {
     try {
-        const { nombre, correo, password, rol } = req.body;
+        const { nombre, email, password } = req.body;
 
-        if (!nombre || !correo || !password) {
-            return res.status(400).json({ mensaje: 'Nombre, correo y contraseña son obligatorios.' });
+        if (!nombre || !email || !password) {
+            return res.status(400).json({ error: 'Todos los campos son obligatorios.' });
         }
 
-        // Verificar si el usuario ya existe
-        const usuarioExiste = await UsuarioModel.buscarPorCorreo(correo);
-        if (usuarioExiste) {
-            return res.status(400).json({ mensaje: 'El correo electrónico ya se encuentra registrado.' });
+        const usuarioExistente = await User.findByEmail(email);
+        if (usuarioExistente) {
+            return res.status(400).json({ error: 'El correo electrónico ya está registrado.' });
         }
 
-        const idInsertado = await UsuarioModel.crearUsuario({ nombre, correo, password, rol });
-        res.status(201).json({
-            mensaje: 'Usuario registrado satisfactoriamente',
-            usuarioId: idInsertado
-        });
+        const nuevoId = await User.create(nombre, email, password);
+        return res.status(201).json({ exito: true, mensaje: 'Usuario registrado con éxito.', userId: nuevoId });
     } catch (error) {
-        console.error('Error detallado en registro:', error);
-        res.status(500).json({ mensaje: 'Error al registrar el usuario', error: error.message });
+        console.error(error);
+        return res.status(500).json({ error: 'Error al registrar el usuario en la base de datos.' });
     }
 };
 
-/**
- * @function login
- * @description Autenticación e inicio de sesión de usuarios.
- * @route POST /api/auth/login
- */
 export const login = async (req, res) => {
     try {
-        const { correo, password } = req.body;
+        const { email, password } = req.body;
 
-        if (!correo || !password) {
-            return res.status(400).json({ mensaje: 'Debe proporcionar usuario (correo) y contraseña.' });
+        if (!email || !password) {
+            return res.status(400).json({ error: 'Ingrese correo y contraseña.' });
         }
 
-        const usuario = await UsuarioModel.buscarPorCorreo(correo);
-
-        // Validación de credenciales
-        if (!usuario || usuario.password !== password) {
-            return res.status(401).json({ mensaje: 'Error en la autenticación: Credenciales inválidas.' });
+        const usuario = await User.findByEmail(email);
+        if (!usuario || usuario.password !== password) { // Para producción se recomienda encriptar con bcrypt
+            return res.status(401).json({ error: 'Credenciales incorrectas.' });
         }
 
-        // Respuesta satisfactoria
-        res.status(200).json({
-            mensaje: 'Autenticación satisfactoria',
-            usuario: {
-                id: usuario.id,
-                nombre: usuario.nombre,
-                correo: usuario.correo,
-                rol: usuario.rol
-            }
+        return res.json({
+            exito: true,
+            mensaje: 'Inicio de sesión exitoso.',
+            usuario: { id: usuario.id, nombre: usuario.nombre, email: usuario.email }
         });
     } catch (error) {
-        console.error('Error detallado en login:', error);
-        res.status(500).json({ mensaje: 'Error en el proceso de autenticación', error: error.message });
+        console.error(error);
+        return res.status(500).json({ error: 'Error al iniciar sesión.' });
     }
 };

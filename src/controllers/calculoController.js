@@ -1,68 +1,66 @@
-import { CalculoModel } from '../models/calculoModel.js';
-
-/**
- * @function realizarDimensionamiento
- * @description Calcula la cantidad de paneles solares necesarios según el consumo mensual en kWh.
- * @route POST /api/calculo
- */
-export const realizarDimensionamiento = async (req, res) => {
+export const calcularDimensionamiento = (req, res) => {
     try {
-        const { cliente_nombre, consumo_kwh_mes, horas_sol_pico, potencia_panel_w } = req.body;
+        const { consumoMensual, porcentajeAhorro, redEstable } = req.body;
 
-        // Validar requerimientos básicos
-        if (!cliente_nombre || !consumo_kwh_mes || !horas_sol_pico || !potencia_panel_w) {
-            return res.status(400).json({ mensaje: 'Todos los campos energéticos son obligatorios.' });
+        if (!consumoMensual || !porcentajeAhorro) {
+            return res.status(400).json({ error: "Debe ingresar el consumo mensual y el porcentaje de ahorro." });
         }
 
-        // 1. Cálculo de consumo diario promedio (kWh/día)
-        const consumoDiarioKwh = consumo_kwh_mes / 30;
+        const consumo = parseFloat(consumoMensual);
+        const ahorro = parseFloat(porcentajeAhorro);
 
-        // 2. Aplicación de factor de pérdida del sistema (aprox. 20% de pérdidas)
-        const factorPerdida = 1.20;
-        const energiaDiariaRequeridaWh = (consumoDiarioKwh * 1000) * factorPerdida;
+        // 1. kWh objetivo a generar al mes
+        const kwhObjetivo = consumo * (ahorro / 100);
 
-        // 3. Generación diaria estimada por cada panel solar (Wh/día)
-        const generacionPanelDiariaWh = potencia_panel_w * horas_sol_pico;
+        // 2. Potencia requerida de la planta (kWp) - 5.0 HSP y 80% eficiencia
+        const kwp = kwhObjetivo / (30 * 5.0 * 0.8);
 
-        // 4. Cálculo final del número de paneles (Redondeado hacia arriba)
-        const panelesRequeridos = Math.ceil(energiaDiariaRequeridaWh / generacionPanelDiariaWh);
+        // 3. Cantidad de Paneles de 500 W (Redondeado al entero superior)
+        const numeroPaneles = Math.ceil((kwp * 1000) / 500);
 
-        // 5. Estimo de capacidad de batería requerida (Sistema en 24V con 50% de descarga)
-        const bateriaAhRequerida = Math.ceil((energiaDiariaRequeridaWh / 24) * 2);
+        // 4. Potencia del Inversor (+20% de seguridad)
+        const potenciaInversorWatts = Math.ceil((kwp * 1000) * 1.2);
 
-        const objetoResultado = {
-            cliente_nombre,
-            consumo_kwh_mes,
-            horas_sol_pico,
-            potencia_panel_w,
-            paneles_requeridos: panelesRequeridos,
-            bateria_ah_requerida: bateriaAhRequerida
-        };
+        // 5. Tipo de Sistema (On-Grid vs Off-Grid)
+        let tipoConexion = "";
+        let tipoInversor = "";
+        let cantidadBaterias = 0;
+        let capacidadBancoKwh = 0;
 
-        // Guardar en la base de datos
-        const idInsertado = await CalculoModel.guardarCalculo(objetoResultado);
+        if (redEstable) {
+            tipoConexion = "On-Grid (Conectado a la Red Eléctrica)";
+            tipoInversor = "Inversor On-Grid Centralizado / Microinversores";
+        } else {
+            tipoConexion = "Off-Grid (Aislado con Banco de Baterías)";
+            tipoInversor = "Inversor Cargador Off-Grid";
+            
+            // Autonomía de 1.5 días
+            capacidadBancoKwh = (kwhObjetivo / 30) * 1.5;
+            // Baterías de 12V / 200Ah (2.4 kWh c/u)
+            cantidadBaterias = Math.ceil(capacidadBancoKwh / 2.4);
+        }
 
-        res.status(201).json({
-            mensaje: 'Dimensionamiento realizado con éxito',
-            id: idInsertado,
-            resultado: objetoResultado
+        return res.json({
+            exito: true,
+            resumen: {
+                tipoConexion,
+                paneles: {
+                    cantidad: numeroPaneles,
+                    potenciaIndividual: "500 W"
+                },
+                inversor: {
+                    tipo: tipoInversor,
+                    potenciaRecomendada: `${potenciaInversorWatts} W`
+                },
+                baterias: {
+                    requiere: !redEstable,
+                    cantidad: cantidadBaterias,
+                    especificacion: !redEstable ? "12V 200Ah (2.4 kWh c/u)" : "N/A (No requiere)"
+                }
+            }
         });
 
     } catch (error) {
-        res.status(500).json({ mensaje: 'Error al procesar el dimensionamiento solar', error: error.message });
-    }
-};
-
-/**
- * @function listarHistorialCalculos
- * @description Obtiene el historial completo de dimensionamientos.
- * @route GET /api/calculo
- */
-export const listarHistorialCalculos = async (req, res) => {
-    try {
-        const historial = await CalculoModel.obtenerHistorial();
-        res.status(200).json(historial);
-    } catch (error) {
-        res.status(500).json({ mensaje: 'Error al obtener el historial', error: error.message });
+        return res.status(500).json({ error: "Error procesando el cálculo solar." });
     }
 };
